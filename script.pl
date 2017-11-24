@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+## IMPORTS
 use autodie;
 use strict;
 use utf8;
@@ -8,7 +9,7 @@ use warnings qw(all);
 use Getopt::Long;
 use Pod::Usage;
 
-# VERSION
+# HELP
 
 =head1 SYNOPSIS
 
@@ -27,7 +28,7 @@ GetOptions(
 );
 pod2usage(q(-verbose) => 1) if $help;
 
-# Actual code below
+# JSON operation
 
 my $lineno = 1;
 my $current = "";
