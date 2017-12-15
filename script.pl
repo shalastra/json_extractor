@@ -11,16 +11,16 @@ use Getopt::Long;
     ## try to load Tie::IxHash
     my $ordered_hash = eval {require Tie::IxHash};
 
-    my $write = "json";
+    my $output_format = "json";
 
     my $trim = 0;
-    my $display_help = 0;
+    my $help = 0;
 
     GetOptions(
-        "--help|h!"           => \$display_help,
+        "--help|h!"           => \$help,
         "--trim!" => \$trim,
-    ) or show_help();
-    show_help() if $display_help;
+    ) or display_help();
+    display_help() if $help;
 
     ## use STDIN if file name is not specified
     my ($fn) = @ARGV;
@@ -28,18 +28,18 @@ use Getopt::Long;
         die "input file name is required";
     }
 
-    my ($data, $format) = read_data($fn, $ordered_hash, $trim);
+    my ($data) = read_data($fn, $ordered_hash, $trim);
 
-    my $output = \*STDOUT;
+    my $result = \*STDOUT;
 
-    write_json($data, $output);
+    write_json($data, $result);
 
-    if ($write eq 'self') {
-        close($output);
+    if ($output_format eq 'self') {
+        close($result);
     }
 }
 
-sub show_help {
+sub display_help {
     print "This script gives an user possibility to convert CSV to JSON. \n" .
         "To run execute this script and as an argument pass the name of csv file, i.e.:\n\n" .
         "   ./script SacramentocrimeJanuary2006.csv \n\n" .
@@ -93,16 +93,10 @@ sub read_data {
     if ($type_detected eq 'csv') {
         $data = read_csv($fn, $ordered_hash, $separator_detected, $trim_whitespaces);
     }
-    elsif ($type_detected eq 'table') {
-        $data = read_table($fn, $ordered_hash, $trim_whitespaces);
-    }
-    elsif ($type_detected eq 'xlsx') {
-        $data = read_xlsx($fn, $ordered_hash);
-    }
     unless (defined $data) {
         die "can't read $type_detected format from [$fn]";
     }
-    return ($data, $type_detected);
+    return ($data);
 }
 
 sub read_csv {
