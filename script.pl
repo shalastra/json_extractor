@@ -10,7 +10,6 @@ use Getopt::Long;
 {
     ## try to load Tie::IxHash
     my $ordered_hash_available = eval { require Tie::IxHash };
-    my $xslx_format_available = eval { require Spreadsheet::XLSX };
 
     my $show_help = 0;
     my $write = "json";
@@ -29,7 +28,7 @@ use Getopt::Long;
         die "input file name is required";
     }
 
-    my ($data, $format) = smart_read_data($fn, $ordered_hash_available, $trim_whitespaces, $xslx_format_available);
+    my ($data, $format) = smart_read_data($fn, $ordered_hash_available, $trim_whitespaces);
 
     my $output = \*STDOUT;
     if ($write eq 'self') {
@@ -52,9 +51,9 @@ sub show_help {
 }
 
 sub smart_read_data {
-    my ($fn, $ordered_hash_available, $trim_whitespaces, $xslx_format_available) = @_;
+    my ($fn, $ordered_hash_available, $trim_whitespaces) = @_;
 
-    my ($type_detected, $separator_detected) = smart_file_type_detection($fn, $xslx_format_available);
+    my ($type_detected, $separator_detected) = smart_file_type_detection($fn);
     unless (defined $type_detected) {
         $type_detected = 'csv';
     }
@@ -76,7 +75,7 @@ sub smart_read_data {
 }
 
 sub smart_file_type_detection {
-    my ($file, $xslx_format_available) = @_;
+    my ($file) = @_;
 
     ## FIX doen't work with STDIN
     open(my $fh, "<", $file) or die "can't read [$file]: $!";
