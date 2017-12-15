@@ -17,7 +17,6 @@ use Getopt::Long;
 
     GetOptions(
         "--help|h!" => \$show_help,
-        "--write=s" => \$write,
         "--trim-whitespaces!" => \$trim_whitespaces,
     ) or show_help();
     show_help() if $show_help;
@@ -45,8 +44,16 @@ use Getopt::Long;
 }
 
 sub show_help {
-    print "Usage: $0 [--write=json] [--trim-whitespaces] ".
-        "[--help] <file>\n";
+    print "This script gives an user possibility to convert CSV to JSON. \n".
+        "To run execute this script and as an argument pass the name of csv file, i.e.:\n\n".
+        "   ./script SacramentocrimeJanuary2006.csv \n\n".
+        "As an output, converted JSON will be printed.\n".
+        "To save to new file, simply use tee command, i.e.:\n\n".
+        "   ./script SacramentocrimeJanuary2006.csv | tee <filename>.json\n\n".
+        "Additional arguments:\n".
+        "[--trim-whitespaces] - removes whitespaces from an output.\n".
+        "[--help, -h] - prints this help.\n".
+        "\n";
     exit(1);
 }
 
