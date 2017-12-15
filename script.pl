@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+#IMPORTS
 use strict;
 use warnings;
 
@@ -7,31 +8,34 @@ use JSON;
 use Text::CSV;
 use Getopt::Long;
 
+#Main functionality
 {
-    ## try to load Tie::IxHash
     my $ordered_hash = eval {require Tie::IxHash};
 
+    # Defined output format
     my $output_format = "json";
 
     my $trim = 0;
     my $help = 0;
 
+    # List of available options in script, passed as an argument during execution
     GetOptions(
         "--help|h!"           => \$help,
         "--trim!" => \$trim,
     ) or display_help();
     display_help() if $help;
 
-    ## use STDIN if file name is not specified
     my ($fn) = @ARGV;
     unless (defined $fn) {
         die "input file name is required";
     }
 
+    # Reading data from a defined file
     my ($data) = read_data($fn, $ordered_hash, $trim);
 
     my $result = \*STDOUT;
 
+    # Prints JSON in console
     write_json($data, $result);
 
     if ($output_format eq 'self') {
@@ -39,6 +43,7 @@ use Getopt::Long;
     }
 }
 
+#Responsible for displaying help
 sub display_help {
     print "This script gives an user possibility to convert CSV to JSON. \n" .
         "To run execute this script and as an argument pass the name of csv file, i.e.:\n\n" .
@@ -53,11 +58,10 @@ sub display_help {
     exit(1);
 }
 
-
-sub smart_file_type_detection {
+# Returns type of a passed file, possible to extend
+sub recognize_filetype {
     my ($file) = @_;
 
-    ## FIX doen't work with STDIN
     open(my $fh, "<", $file) or die "can't read [$file]: $!";
     my $lines = "";
     my $count = 5;
@@ -68,6 +72,7 @@ sub smart_file_type_detection {
     close($fh);
 
     if ($lines =~ m/^\s*[{\]]/) {## "[" or "{"
+        print "You cannot convert json to json";
         return ('json');
     }
     else {
@@ -77,36 +82,41 @@ sub smart_file_type_detection {
             return ('csv', ",");
         }
     }
+
+    print "Cannot recognize filetype.";
+
     return;
 }
 
+# Reads data from a spedified file
 sub read_data {
     my ($fn, $ordered_hash, $trim_whitespaces) = @_;
 
-    my ($type_detected, $separator_detected) = smart_file_type_detection($fn);
-    unless (defined $type_detected) {
-        $type_detected = 'csv';
+    my ($format, $separator) = recognize_filetype($fn);
+    unless (defined $format) {
+        $format = 'csv';
     }
-    $separator_detected = ",";
+    $separator = ",";
 
     my $data = undef;
-    if ($type_detected eq 'csv') {
-        $data = read_csv($fn, $ordered_hash, $separator_detected, $trim_whitespaces);
+    if ($format eq 'csv') {
+        $data = read_csv($fn, $ordered_hash, $separator, $trim_whitespaces);
     }
     unless (defined $data) {
-        die "can't read $type_detected format from [$fn]";
+        die "can't read $format format from [$fn]";
     }
     return ($data);
 }
 
+# If it is a csv file, reads it
 sub read_csv {
-    my ($fn, $ordered_hash, $separator, $trim_whitespaces) = @_;
+    my ($fn, $ordered_hash, $separator, $trim) = @_;
 
     my $csv = Text::CSV->new(
     {
         'binary'           => 1,
         'sep_char'         => $separator,
-        'allow_whitespace' => $trim_whitespaces,
+        'allow_whitespace' => $trim,
     }
     ) or die "can't create Text::CSV: " . Text::CSV->error_diag();
 
@@ -132,6 +142,7 @@ sub read_csv {
     return \@rows;
 }
 
+#Prints JSON from read CSV
 sub write_json {
     my ($data, $output) = @_;
 
