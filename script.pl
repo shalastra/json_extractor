@@ -4,9 +4,22 @@
 use strict;
 use warnings;
 
-use JSON;
-use Text::CSV;
 use Getopt::Long;
+
+BEGIN {
+    my $fails;
+    foreach my $module ( qw/JSON Text::CSV/ ) {
+        eval {
+            eval "require $module" or die;
+            $module->import;
+        };
+        if ($@ && $@ =~ /$module/) {
+            warn "You need to install the $module module";
+            $fails++;
+        }
+    }
+    exit if $fails;
+}
 
 #Main functionality
 {
@@ -76,14 +89,8 @@ sub recognize_filetype {
         return ('json');
     }
     else {
-        my ($first_line, $second_line, undef) = split(m{\r?\n}, $lines, 3);
-
-        if (split(",", $first_line) == split(",", $second_line)) {
-            return ('csv', ",");
-        }
+        return ('csv', ",");
     }
-
-    print "Cannot recognize filetype.";
 
     return;
 }
